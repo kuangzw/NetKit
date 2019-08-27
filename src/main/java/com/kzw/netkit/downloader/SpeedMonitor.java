@@ -37,7 +37,6 @@ public class SpeedMonitor extends TimerTask {
 		percent = percent > 1 ? 1 : percent;
 
 		System.out.print("[");
-		
 		int rate = (int)((percent*100)*30/100);
 		for (int i = 0; i < 30; i++) {
 			if(i == 0 || i < rate) {
