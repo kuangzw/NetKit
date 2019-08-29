@@ -30,14 +30,19 @@ public class NetKitApplication {
 			cmd.showUsage();
 			return ;
 		}
+		String[] tarArgs = null;
 		if(cmd.hasOption("--logLevel")) {
 			Logger logger = LogManager.getLogger("com.kzw.netkit");
 			String logLevel = cmd.getOptionValue("--logLevel");
 			logger.setLevel(Level.toLevel(logLevel));
+			log.info("used logLevel : " + logLevel);
+			tarArgs = new String[args.length-3];
+			System.arraycopy(args, 3, tarArgs, 0, tarArgs.length);
+		}else {
+			tarArgs = new String[args.length-1];
+			System.arraycopy(args, 1, tarArgs, 0, tarArgs.length);
 		}
 		
-		String[] tarArgs = new String[args.length-1];
-		System.arraycopy(args, 1, tarArgs, 0, tarArgs.length);
 		
 		if(cmd.hasOption("download")) {
 			MultiThreadDownloaderApplication.main(tarArgs);

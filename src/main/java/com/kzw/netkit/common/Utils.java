@@ -8,8 +8,16 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.DecimalFormat;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import com.kzw.netkit.downloader.DownLoadThread;
+
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class Utils {
 	public static final synchronized URLConnection newConnection(String uri, Proxy proxy, Map<String, String> headers)
 			throws IOException {
@@ -26,7 +34,6 @@ public class Utils {
 				conn.setRequestProperty(key, value);
 			});
 		}
-
 		return conn;
 	}
 

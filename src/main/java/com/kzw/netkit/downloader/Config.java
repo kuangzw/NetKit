@@ -66,9 +66,9 @@ public class Config {
 			return saveFileName;
 		}
 
-		this.url = url.split("\\?", 2)[0];
-		int position = this.url.lastIndexOf("/");
-		String fileName = this.url.substring(position + 1);
+		String tmpUrl = url.split("\\?", 2)[0];
+		int position = tmpUrl.lastIndexOf("/");
+		String fileName = tmpUrl.substring(position + 1);
 		
 		if(fileName.length() > 100 
 				|| fileName.indexOf("\\") != -1

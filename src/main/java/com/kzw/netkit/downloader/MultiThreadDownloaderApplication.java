@@ -95,14 +95,13 @@ public class MultiThreadDownloaderApplication {
 				if(!cfg.getHeaders().containsKey("Cookie")) {
 					throw new IllegalArgumentException("百度网盘内文件下载必须指定cookie值，--help查看帮助。");
 				}
-				if(cfg.getThreadCount() > 8) {
-					throw new IllegalArgumentException("百度盘文件下载线程数量不能超过8线程，否则容易限速！");
-				}
+//				if(cfg.getThreadCount() > 8) {
+//					throw new IllegalArgumentException("百度盘文件下载线程数量不能超过8线程，否则容易限速！");
+//				}
 				String bdUrl = BaiduPanUtils.getDownloadLinkWithRESTApi(cfg.getUrl(), cfg.getHeaders());
 				log.info("百度网盘下载链接解析为：{}", bdUrl);
 				cfg.setUrl(bdUrl);
 			}
-			
 		} catch (IllegalArgumentException e) {
 			log.error(e.getMessage());
 			log.error("输入 --help 查看帮助！");

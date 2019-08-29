@@ -32,7 +32,8 @@ public class DownLoadThread implements Runnable {
 	private int blockFrom;
 	private int blockEnd;
 
-	private int totleRetryTime = 5;
+	private int totleRetryTime = 10;
+	private int crtRetryTime = 0;
 
 	public DownLoadThread(byte[] metaData,int blockFrom, int blockEnd, Config cfg, SpeedMonitor speedMonitor) {
 		this.metaData = metaData;
@@ -53,6 +54,7 @@ public class DownLoadThread implements Runnable {
 		
 		long pstStart = blockFrom * cfg.getBlockSize();
 		long pstEnd = blockEnd * cfg.getBlockSize();
+		int preBlock = blockFrom;
 		
 		try {
 			conn = Utils.newConnection(cfg.getUrl(), cfg.getProxy(), cfg.getHeaders());
@@ -80,11 +82,15 @@ public class DownLoadThread implements Runnable {
 				raf.write(buf, 0, len);
 				speedMonitor.updateProccess(len);
 
-				int block = (int)(totalReadLength / cfg.getBlockSize());
-				if(block > 0) {
-					metaData[blockFrom + block -1] = 1;
+				int cBlock = (int)(totalReadLength / cfg.getBlockSize()) + blockFrom;
+
+				for (int i = preBlock; i < cBlock; i++) {
+					metaData[i] = 1;
 				}
-				if(metaData[blockFrom + block] == 1) { // 下一个block已下载
+				preBlock = cBlock;
+				
+				if(cBlock >= metaData.length 
+						|| metaData[cBlock] == 1) { // 下一个block已下载
 					break;
 				} 
 			}
@@ -93,14 +99,14 @@ public class DownLoadThread implements Runnable {
 			}
 			// 防止进度条字符缓冲，使用空格覆盖
 			log.info("线程结束,下载长度：{}, 耗时： {}           ", Utils.formatFileSize(totalReadLength), Utils.formatUsedTime(beginTime,System.currentTimeMillis()));
-		} catch (IOException e) {
+		} catch (IllegalStateException | IOException e) {
 			closeAllQuiet(raf, conn, bis);
 
-			totleRetryTime --;
-			if(totleRetryTime > 0) {
-				log.info("下载失败 ,正在重试 (次数：{}) : {}", totleRetryTime, e.getCause()!=null?e.getCause().getMessage():e.getMessage());
+			crtRetryTime ++;
+			if(crtRetryTime < totleRetryTime) {
+				log.info("下载失败 ,正在重试 (次数：{}) : {}", crtRetryTime, e.getCause()!=null?e.getCause().getMessage():e.getMessage());
 				try {
-					Thread.sleep(3000);
+					Thread.sleep(crtRetryTime * 3000);
 				} catch (InterruptedException e1) { }
 				// 重新下载
 				this.blockFrom += (int)(totalReadLength / cfg.getBlockSize());

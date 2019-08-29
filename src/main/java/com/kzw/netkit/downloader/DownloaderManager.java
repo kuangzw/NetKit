@@ -126,14 +126,14 @@ public class DownloaderManager {
 		contentLength = Utils.getHttpContentLength(cfg.getUrl(), cfg.getProxy(), cfg.getHeaders());
 		log.info("[GET] {} , ContentLength: {} ({}byte)" , cfg.getUrl(), Utils.formatFileSize(contentLength), contentLength);
 		speedMonitor = new SpeedMonitor(contentLength);
-		
+
+		if(contentLength < 1024*1024*3) { // 下载内容<3mb
+			cfg.setBlockSize(1024);
+		}
 		if(cfg.getMetaFile().exists() && cfg.getDownloadFile().exists()) { // 继续下载未完成
 			log.info("继续下载未完成任务 ..");
 			metaBytes = FileUtils.readFileToByteArray(cfg.getMetaFile());
 		}else { // 新的下载任务
-			if(contentLength < 1024*1024*3) { // 下载内容<3mb
-				cfg.setBlockSize(1024);
-			}
 			metaBytes = new byte[(int)Math.ceil(Double.valueOf(contentLength) / cfg.getBlockSize())];
 		}
 		resumeTask();
@@ -151,27 +151,28 @@ public class DownloaderManager {
 	private TimerTask downloadTaskTimmer = new TimerTask() {
 		@Override
 		public void run() {
-			for (DownLoadThread downLoadTask : tasks) {
-				if (downLoadTask.isComplete()) {
-					DownLoadThread mostTask = getMostTask();
-					if(mostTask != null && mostTask.getUnDownloadBlockCount() >= 2) {
-						downLoadTask = mostTask.breakTask();
+			try {
+				for (DownLoadThread downLoadTask : tasks) {
+					if (downLoadTask.isComplete()) {
+						DownLoadThread mostTask = getMostTask();
+						if(mostTask != null && mostTask.getUnDownloadBlockCount() >= 2) {
+							downLoadTask = mostTask.breakTask();
+							executorService.execute(downLoadTask);
+						}
+					}else if(downLoadTask.isInitial() 
+							&& ((ThreadPoolExecutor)executorService).getActiveCount() < tasks.size()){
+						Thread.sleep(1000*5);
 						executorService.execute(downLoadTask);
 					}
-				}else if(downLoadTask.isInitial() 
-						&& ((ThreadPoolExecutor)executorService).getActiveCount() < tasks.size()){
-					executorService.execute(downLoadTask);
 				}
-			}
-
-			try {
+				
 				metaDataFile.seek(0);
 				metaDataFile.write(metaBytes, 0, metaBytes.length);
 				
 				if(getCompletedBlock() == metaBytes.length) { // 下载完成
 					onFinished();
 				}
-			} catch (IOException e) {
+			} catch (IOException | InterruptedException e) {
 				e.printStackTrace();
 			}
 			

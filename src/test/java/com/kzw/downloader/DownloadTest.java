@@ -15,7 +15,8 @@ public class DownloadTest {
 //	private static String url = "http://www.baidu.com/img/bd_logo1.png";
 //	private static String url = "https://telerik-fiddler.s3.amazonaws.com/fiddler/FiddlerSetup.exe";
 //	private static String url = "http://52gyxz.c1578dn.cn/521/rj_lw1/xunixianshixiangji.apk";
-	private static String url = "https://dl-sh-ctc-2.pchome.net/03/lt/VMware-workstation-full-15.0.2-10952284.exe?key=a44d589d53ae89a03fd578010b279045&tmp=1566611662152";
+	private static String url = "http://www.win10pcap.org/download/Win10Pcap-v10.2-5002.msi";
+//	private static String url = "https://dl-sh-ctc-2.pchome.net/03/lt/VMware-workstation-full-15.0.2-10952284.exe?key=a44d589d53ae89a03fd578010b279045&tmp=1566611662152";
 //	private static String url = "https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1566536883436&di=6a2d5815b57b928ecc6e321432e8f485&imgtype=0&src=http%3A%2F%2Fb-ssl.duitang.com%2Fuploads%2Fitem%2F201303%2F07%2F20130307211303_kr45e.jpeg";
 //	private static String url = "https://up.enterdesk.com/edpic_source/8a/f1/1a/8af11a5740292a586209f7e9e6373561.jpg";
 //	private static String url = "http://nginx.org/download/nginx-1.16.1.zip";
@@ -24,8 +25,8 @@ public class DownloadTest {
 
 	public static void main(String[] args) throws Exception {
 		long stime = System.currentTimeMillis();
-//		new DownloadTest().testNormal(url);
-		new DownloadTest().testBaiduPan("/Android/android-x86-4.0-RC2-tx2500.iso");
+		new DownloadTest().testNormal(url);
+//		new DownloadTest().testBaiduPan("/Android/android-x86-4.0-RC2-tx2500.iso");
 //		new Test().testWithCookie();
 //		new Test().testWithProxy();
 
@@ -52,7 +53,6 @@ public class DownloadTest {
 		Config cfg = new Config();
 		cfg.setThreadCount(3);
 		cfg.setUrl(url);
-		cfg.setSaveFileName("vms.exe");
 		
 		DownloaderManager d = new DownloaderManager(cfg);
 		d.start();
