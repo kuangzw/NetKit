@@ -161,7 +161,6 @@ public class DownloaderManager {
 						}
 					}else if(downLoadTask.isInitial() 
 							&& ((ThreadPoolExecutor)executorService).getActiveCount() < tasks.size()){
-						Thread.sleep(1000*5);
 						executorService.execute(downLoadTask);
 					}
 				}
@@ -172,7 +171,7 @@ public class DownloaderManager {
 				if(getCompletedBlock() == metaBytes.length) { // 下载完成
 					onFinished();
 				}
-			} catch (IOException | InterruptedException e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 			
