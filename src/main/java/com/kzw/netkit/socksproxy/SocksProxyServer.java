@@ -1,13 +1,16 @@
 package com.kzw.netkit.socksproxy;
 
+import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -25,6 +28,7 @@ public class SocksProxyServer implements Runnable {
 
 	private static final int SOCKS_PROTOCOL_4 = 0X04;
 	private static final int SOCKS_PROTOCOL_5 = 0X05;
+	private static final int HTTP_PROTOCOL = 67; //第一个字母：C （ CONNECT www.hbdm.com:80 HTTP/1.1 ...）
 	private static final int DEFAULT_BUFFER_SIZE = 1024;
 	private static final byte TYPE_IPV4 = 0x01;
 	private static final byte TYPE_IPV6 = 0X02;
@@ -51,16 +55,19 @@ public class SocksProxyServer implements Runnable {
 			// 从协议头中获取socket的类型
 			byte[] tmp = new byte[1];
 			int n = sourceIn.read(tmp);
+			Arrays.toString(tmp);
+			
 			if (n == 1) {
 				int protocol = tmp[0];
 				// socket4
 				if (SOCKS_PROTOCOL_4 == protocol) {
 					proxySocket = convertToSocket4(sourceIn, sourceOut);
-
 				} else if (SOCKS_PROTOCOL_5 == protocol) {
 					proxySocket = convertToSocket5(sourceIn, sourceOut);
-				} else {
-					log.info("Socket协议错误,不是Socket4或者Socket5");
+				} else if(HTTP_PROTOCOL == protocol) { // http代理 ： 格式如：CONNECT www.hbdm.com:80 HTTP/1.1 
+					proxySocket = convertToHttp(sourceIn, sourceOut);
+				} else { 
+					log.info("Socket协议错误,不是Socket4或者Socket5或者HTTP协议");
 				}
 				// socket转换
 				if (null != proxySocket) {
@@ -197,6 +204,34 @@ public class SocksProxyServer implements Runnable {
 		}
 		return (Socket) resultTmp;
 
+	}
+	private Socket convertToHttp(InputStream inputStream, OutputStream outputStream) throws IOException {
+		BufferedReader bffdReader = new BufferedReader(new InputStreamReader(inputStream));
+		StringBuilder headStr = new StringBuilder("C"); //第一个字符（已经读取）
+		String host = null;
+		String line = null;
+		while (null != (line=bffdReader.readLine())) {
+			headStr.append(line + "\r\n");
+            if (line.length() == 0) {
+                break;
+            } else {
+                String[] temp = line.split(" ");
+                if (temp[0].contains("Host")) {
+                    host = temp[1];
+                }
+            }
+		}
+		String type = headStr.substring(0, headStr.indexOf(" "));
+		//根据host头解析出目标服务器的host和port
+        String[] hostTemp = host.split(":");
+        host = hostTemp[0];
+        int port = 80;
+        if (hostTemp.length > 1) {
+            port = Integer.valueOf(hostTemp[1]);
+        }
+        //连接到目标服务器
+        return new Socket(host, port);
+		
 	}
 
 	private void transfer(InputStream in, OutputStream out, CountDownLatch latch) {

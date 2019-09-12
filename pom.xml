@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<groupId>com.kzw.downloader</groupId>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>MultiThreadDownloader</artifactId>
+    <artifactId>NetKit</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	
 	
@@ -56,11 +56,11 @@
 			<version>1.9.11</version>
 		</dependency>
 		
-		<dependency>
+		<!-- <dependency>
 			<groupId>com.iinvest.easytrading</groupId>
 			<artifactId>EasySocket</artifactId>
 			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+		</dependency> -->
 		
         <dependency>
             <groupId>org.projectlombok</groupId>
