@@ -22,7 +22,7 @@ public class NetKitApplication {
 		
 		cmd.addOpt("download", "", "<args>", "多线程下载器，支持socket下载（需要socketServer配合）");
 		cmd.addOpt("socketServer","", "<args>","socket下载服务端，提供宿主机器文件多线程下载。");
-		cmd.addOpt("proxyServer","", "<args>","socks4/socks5代理服务");
+		cmd.addOpt("proxyServer","", "<args>","socks4/socks5/http代理服务");
 		cmd.addOpt("curl","", "<args>","模拟网络请求，支持自定义请求头，多线程并发、自定义请求次数、cron定时器");
 		cmd.addOpt("--logLevel","", "<debug|info|warn|error>","日志级别(默认info)");
 		
