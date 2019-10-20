@@ -55,7 +55,6 @@ public class SocksProxyServer implements Runnable {
 			// 从协议头中获取socket的类型
 			byte[] tmp = new byte[1];
 			int n = sourceIn.read(tmp);
-			Arrays.toString(tmp);
 			
 			if (n == 1) {
 				int protocol = tmp[0];
@@ -76,20 +75,16 @@ public class SocksProxyServer implements Runnable {
 					proxyOut = proxySocket.getOutputStream();
 					transfer(sourceIn, proxyOut, countDownLatch);
 					transfer(proxyIn, sourceOut, countDownLatch);
-					try {
-						countDownLatch.await();
-					} catch (InterruptedException e) {
-//						e.printStackTrace();
-					}
+					countDownLatch.await();
 
 				}
 
 			} else {
-				log.info("SOCKET ERROR: " + tmp.toString());
+				log.info("SOCKET ERROR: read failt from : {}", remoteAddress);
 			}
 
-		} catch (IOException e) {
-			// e.printStackTrace();
+		} catch (Exception e) {
+			log.error("error: {}", e.getMessage());
 		} finally {
 			closeIO(sourceIn);
 			closeIO(proxyIn);
@@ -290,8 +285,9 @@ public class SocksProxyServer implements Runnable {
 	}
 
 	public static void main(String[] args) {
+		
 		java.security.Security.setProperty("networkaddress.cache.ttl", "86400");
-		int port = 80;
+		int port = 8088;
 		try {
 			if(args.length == 1) {
 				port = Integer.valueOf(args[0]);
