@@ -1,13 +1,5 @@
 package com.kzw.downloader;
 
-import java.io.DataInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.RandomAccessFile;
-
-import com.kzw.netkit.downloader.socket.client.SocketClient;
-import com.kzw.netkit.downloader.socket.client.SocketClientDownloaderThread;
-
 public class SocketClientTest {
 	public SocketClientTest() {
 

@@ -20,9 +20,8 @@ public class SocketDownloaderServer {
     public static void main(String[] args) {
 		CmdLineUtil cmd = new CmdLineUtil(args); 
 		cmd.addOpt("--port", "-p", "<int>", "监听端口，默认8888");
-		
+		cmd.showUsage();
     	if(args == null || cmd.isShowHelp()) {
-    		cmd.showUsage();
     		return ;
     	}
     	int port = 8888;
@@ -34,21 +33,28 @@ public class SocketDownloaderServer {
     	EasySocketServer.protocol(StringOperationProtocol.class).listen(port)
 			.handler("getFileLength", new ProtocolHandler() {
 				@Override
-				public void handle(byte[] buffers, int currentLength, int totleLength, boolean isLast) throws IOException {
-					String body = new String(buffers ,"utf-8");
-					System.out.println("getFileLength : received : " + body);
+				public void handle(byte[] buffers, long currentLength, long totleLength, boolean isLast) throws IOException {
+					String body = new String(buffers ,"utf-8").trim();
+					log.info("<<<<< getFileLength :  {}", body);
+
+					StringOperationProtocol protocol = (StringOperationProtocol)getProtocol();
 					
 					File file = new File(body);
+					if(!file.exists()) {
+						log.info("file not exists !");
+						protocol.send("error", "file "+body+" not exists !");
+						return ;
+					}
 					Long fLength = file.length();
+					log.info(">>>> size : {}", fLength);
 					
-					StringOperationProtocol protocol = (StringOperationProtocol)getProtocol();
 					protocol.send("getFileLength", String.valueOf(fLength));
 				}
 			})
 			.handler("downloadFile", new ProtocolHandler() {
 				@Override
-				public void handle(byte[] buffers, int currentLength, int totleLength, boolean isLast) throws IOException {
-					String body = new String(buffers ,"utf-8");
+				public void handle(byte[] buffers, long currentLength, long totleLength, boolean isLast) throws IOException {
+					String body = new String(buffers ,"utf-8").trim();
 					System.out.println("downloadFile : received : " + body);
 					
 					String[] tmp = body.split("@");

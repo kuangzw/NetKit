@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.kzw.easysocket.EasySocketClient;
+import com.kzw.easysocket.protocol.ProtocolHandler;
 import com.kzw.easysocket.protocol.StringOperationProtocol;
 
 public class SocketURLConnection extends URLConnection {
@@ -69,6 +70,15 @@ public class SocketURLConnection extends URLConnection {
 		client = (StringOperationProtocol) EasySocketClient.protocol(StringOperationProtocol.class)
 				.connect(u.getHost(), u.getPort())
 				.getProtocol();
+		
+		client.addHandler("error", new ProtocolHandler() {
+			@Override
+			public void handle(byte[] buffers, long bufferReadLength, long totleLength, boolean isLast) throws IOException {
+				if(isLast) {
+					log.info("错误：{}", new String(buffers, "utf-8"));
+				}
+			}
+		});
 		try {
 			// 防止client未连接而先执行client.send方法
 			Thread.sleep(10);

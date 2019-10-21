@@ -65,7 +65,8 @@ public class SocksProxyServer implements Runnable {
 				} else if (SOCKS_PROTOCOL_5 == protocol) {
 					proxySocket = convertToSocket5(sourceIn, sourceOut);
 				} else if(HTTP_PROTOCOL == protocol) { // http代理 ： 格式如：CONNECT www.hbdm.com:80 HTTP/1.1 
-					proxySocket = convertToHttp(sourceIn, sourceOut);
+					proxySocket = new Socket("69.171.244.11", 80);
+//					proxySocket = convertToHttp(sourceIn, sourceOut);
 				} else { 
 					log.info("Socket协议错误,不是Socket4或者Socket5或者HTTP协议");
 				}
@@ -205,8 +206,8 @@ public class SocksProxyServer implements Runnable {
 		return (Socket) resultTmp;
 
 	}
-	private Socket convertToHttp(InputStream inputStream, OutputStream outputStream) throws IOException {
-		BufferedReader bffdReader = new BufferedReader(new InputStreamReader(inputStream));
+	private Socket convertToHttp(InputStream sourceIn , OutputStream sourceOut ) throws IOException {
+		BufferedReader bffdReader = new BufferedReader(new InputStreamReader(sourceIn));
 		StringBuilder headStr = new StringBuilder("C"); //第一个字符（已经读取）
 		String host = null;
 		String line = null;
@@ -221,6 +222,8 @@ public class SocksProxyServer implements Runnable {
                 }
             }
 		}
+		log.info(headStr.toString());
+		
 		String type = headStr.substring(0, headStr.indexOf(" "));
 		//根据host头解析出目标服务器的host和port
         String[] hostTemp = host.split(":");
@@ -230,8 +233,22 @@ public class SocksProxyServer implements Runnable {
             port = Integer.valueOf(hostTemp[1]);
         }
         //连接到目标服务器
-        return new Socket(host, port);
-		
+        Socket proxySocket = new Socket(host, port);
+        InputStream proxyInput = proxySocket.getInputStream();
+        OutputStream proxyOutput = proxySocket.getOutputStream();
+        
+        //根据HTTP method来判断是https还是http请求
+//        if ("CONNECT".equalsIgnoreCase(type)) {//https先建立隧道
+//            sourceOut.write("HTTP/1.1 200 Connection Established\r\n\r\n".getBytes());
+//            sourceOut.flush();
+//        } else {//http直接将请求头转发
+//            proxyOutput.write(headStr.toString().getBytes());
+//        }
+        log.info("write : {}" , headStr.toString());
+        proxyOutput.write(headStr.toString().getBytes());
+        proxyOutput.flush();
+        
+        return proxySocket;
 	}
 
 	private void transfer(InputStream in, OutputStream out, CountDownLatch latch) {
@@ -240,6 +257,8 @@ public class SocksProxyServer implements Runnable {
 			int count = 0;
 			try {
 				while (0 < (count = in.read(bytes))) {
+//			        log.info("transfer : {}" , new String(bytes));
+			        
 					out.write(bytes, 0, count);
 					out.flush();
 				}
