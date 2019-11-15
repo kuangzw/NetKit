@@ -14,6 +14,7 @@ import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -76,8 +77,8 @@ public class SocksProxyServer implements Runnable {
 					proxyOut = proxySocket.getOutputStream();
 					transfer(sourceIn, proxyOut, countDownLatch);
 					transfer(proxyIn, sourceOut, countDownLatch);
-					countDownLatch.await();
-
+					countDownLatch.await(30, TimeUnit.SECONDS);
+					countDownLatch = null;
 				}
 
 			} else {
@@ -88,9 +89,9 @@ public class SocksProxyServer implements Runnable {
 			log.error("error: {}", e.getMessage());
 		} finally {
 			closeIO(sourceIn);
+			closeIO(sourceOut);
 			closeIO(proxyIn);
 			closeIO(proxyOut);
-			closeIO(proxyIn);
 			closeIO(proxySocket);
 			closeIO(sourceSocket);
 		}
@@ -272,6 +273,7 @@ public class SocksProxyServer implements Runnable {
 		if (closeable != null) {
 			try {
 				closeable.close();
+				closeable = null;
 			} catch (IOException e) {
 //				e.printStackTrace();
 			}
